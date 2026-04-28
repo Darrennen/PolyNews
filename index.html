@@ -9,7 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body,#root{width:100%;height:100%;overflow:hidden;background:#f1ede4}
+  html,body{width:100%;height:100%;background:#f1ede4}
+  #root{width:100%;height:100%}
+  @keyframes pm{0%{width:0%;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0%;margin-left:100%}}
 </style>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
@@ -25,35 +27,35 @@ const CLOB  = 'https://clob.polymarket.com';
 
 // ─── MOCK FALLBACK DATA ───────────────────────────────────────────────────────
 let MARKETS = [
-  { id:'fed-rate-cut-jun', cat:'Macro',   q:'Will the Fed cut rates at the June 2026 meeting?',  short:'Fed cuts in June',     yes:0.68, delta24:+0.041, vol:12840000, liq:2310000, closes:'Jun 17, 2026', seed:17 },
-  { id:'btc-100k-eoy',     cat:'Crypto',  q:'Will BTC close above $120k on Dec 31, 2026?',        short:'BTC > $120k EOY',      yes:0.42, delta24:-0.028, vol:8215000,  liq:1440000, closes:'Dec 31, 2026', seed:41 },
-  { id:'champions-final',  cat:'Sports',  q:'Will Real Madrid win the Champions League final?',   short:'Real Madrid wins UCL', yes:0.57, delta24:+0.012, vol:4120000,  liq:880000,  closes:'May 30, 2026', seed:9  },
-  { id:'oscar-best-pic',   cat:'Culture', q:'Will "The Quiet Hours" win Best Picture at the 2027 Oscars?', short:'Best Pic: Quiet Hours', yes:0.31, delta24:+0.060, vol:1890000, liq:410000, closes:'Mar 7, 2027', seed:23 },
-  { id:'recession-q3',     cat:'Macro',   q:'US recession declared by NBER in Q3 2026?',          short:'NBER recession Q3',    yes:0.18, delta24:-0.009, vol:6540000,  liq:1120000, closes:'Oct 1, 2026',  seed:5  },
-  { id:'spacex-mars',      cat:'Tech',    q:'SpaceX uncrewed Mars launch attempt before 2027?',   short:'SpaceX Mars 2026',     yes:0.24, delta24:+0.018, vol:980000,   liq:290000,  closes:'Dec 31, 2026', seed:31 },
+  { id:'fed-rate-cut-jun', cat:'Macro',   q:'Will the Fed cut rates at the June 2026 meeting?',            short:'Fed cuts in June',      yes:0.68, delta24:+0.041, vol:12840000, liq:2310000, closes:'Jun 17, 2026', seed:17 },
+  { id:'btc-100k-eoy',     cat:'Crypto',  q:'Will BTC close above $120k on Dec 31, 2026?',                 short:'BTC > $120k EOY',       yes:0.42, delta24:-0.028, vol:8215000,  liq:1440000, closes:'Dec 31, 2026', seed:41 },
+  { id:'champions-final',  cat:'Sports',  q:'Will Real Madrid win the Champions League final?',            short:'Real Madrid wins UCL',  yes:0.57, delta24:+0.012, vol:4120000,  liq:880000,  closes:'May 30, 2026', seed:9  },
+  { id:'oscar-best-pic',   cat:'Culture', q:'Will "The Quiet Hours" win Best Picture at the 2027 Oscars?', short:'Best Pic: Quiet Hours', yes:0.31, delta24:+0.060, vol:1890000,  liq:410000,  closes:'Mar 7, 2027',  seed:23 },
+  { id:'recession-q3',     cat:'Macro',   q:'US recession declared by NBER in Q3 2026?',                   short:'NBER recession Q3',     yes:0.18, delta24:-0.009, vol:6540000,  liq:1120000, closes:'Oct 1, 2026',  seed:5  },
+  { id:'spacex-mars',      cat:'Tech',    q:'SpaceX uncrewed Mars launch attempt before 2027?',            short:'SpaceX Mars 2026',      yes:0.24, delta24:+0.018, vol:980000,   liq:290000,  closes:'Dec 31, 2026', seed:31 },
 ];
 let NEWS_BY_MARKET = {
   'fed-rate-cut-jun': [
-    { day:20, t:'−1h',  headline:'Powell signals patience on cuts in Jackson Hole remarks', impact:-0.06, src:'Reuters'      },
-    { day:50, t:'−6d',  headline:'CPI prints 0.1pp below consensus; core services soft',   impact:+0.08, src:'BLS release'  },
-    { day:73, t:'−2d',  headline:'Waller op-ed: "case for June cut has strengthened"',      impact:+0.05, src:'WSJ'          },
+    { day:20, t:'−1h',  headline:'Powell signals patience on cuts in Jackson Hole remarks', impact:-0.06, src:'Reuters'     },
+    { day:50, t:'−6d',  headline:'CPI prints 0.1pp below consensus; core services soft',   impact:+0.08, src:'BLS release' },
+    { day:73, t:'−2d',  headline:'Waller op-ed: "case for June cut has strengthened"',      impact:+0.05, src:'WSJ'         },
   ],
-  'btc-100k-eoy':     [{ day:49, t:'−9d',  headline:'Mt. Gox trustee resumes BTC distributions', impact:-0.07, src:'Trustee' }],
-  'champions-final':  [{ day:20, t:'−5d',  headline:'Vinícius cleared to start; full training Wednesday', impact:+0.06, src:'Marca' }],
-  'oscar-best-pic':   [{ day:73, t:'−4d',  headline:'BAFTA Best Film: "The Quiet Hours"', impact:+0.09, src:'BAFTA' }],
-  'recession-q3':     [{ day:49, t:'−1w',  headline:'ISM services back above 50, new orders rise', impact:-0.06, src:'ISM' }],
-  'spacex-mars':      [{ day:49, t:'−10d', headline:'FAA grants modified launch license', impact:+0.05, src:'FAA' }],
+  'btc-100k-eoy':    [{ day:49, t:'−9d',  headline:'Mt. Gox trustee resumes BTC distributions',                    impact:-0.07, src:'Trustee' }],
+  'champions-final': [{ day:20, t:'−5d',  headline:'Vinícius cleared to start; full training Wednesday',            impact:+0.06, src:'Marca'   }],
+  'oscar-best-pic':  [{ day:73, t:'−4d',  headline:'BAFTA Best Film: "The Quiet Hours"',                            impact:+0.09, src:'BAFTA'   }],
+  'recession-q3':    [{ day:49, t:'−1w',  headline:'ISM services back above 50, new orders rise',                   impact:-0.06, src:'ISM'     }],
+  'spacex-mars':     [{ day:49, t:'−10d', headline:'FAA grants modified launch license',                             impact:+0.05, src:'FAA'     }],
 };
 let TICKER_FEED = [
-  { mkt:'Fed cuts in June',      delta:+0.041, reason:'Waller op-ed',   t:'2m'  },
-  { mkt:'Best Pic: Quiet Hours', delta:+0.060, reason:'BAFTA win',      t:'7m'  },
-  { mkt:'BTC > $120k EOY',       delta:-0.028, reason:'Mt.Gox flows',   t:'14m' },
-  { mkt:'Real Madrid wins UCL',  delta:+0.012, reason:'Vinícius fit',   t:'22m' },
-  { mkt:'NBER recession Q3',     delta:-0.009, reason:'ISM beat',       t:'31m' },
-  { mkt:'SpaceX Mars 2026',      delta:+0.018, reason:'FAA license',    t:'47m' },
+  { mkt:'Fed cuts in June',      delta:+0.041, reason:'Waller op-ed',  t:'2m'  },
+  { mkt:'Best Pic: Quiet Hours', delta:+0.060, reason:'BAFTA win',     t:'7m'  },
+  { mkt:'BTC > $120k EOY',       delta:-0.028, reason:'Mt.Gox flows',  t:'14m' },
+  { mkt:'Real Madrid wins UCL',  delta:+0.012, reason:'Vinícius fit',  t:'22m' },
+  { mkt:'NBER recession Q3',     delta:-0.009, reason:'ISM beat',      t:'31m' },
+  { mkt:'SpaceX Mars 2026',      delta:+0.018, reason:'FAA license',   t:'47m' },
 ];
 
-// ─── PRNG + mock series/book ──────────────────────────────────────────────────
+// ─── PRNG + MOCK SERIES/BOOK ──────────────────────────────────────────────────
 function mulberry32(a) {
   return function() {
     a |= 0; a = a + 0x6D2B79F5 | 0;
@@ -83,55 +85,46 @@ function buildSeriesMock(market, days = 90) {
   out[out.length - 1].v = market.yes;
   return out;
 }
-let _SERIES_MAP = {};
-let _BOOK_MAP = {};
-function buildSeries(market, days = 90) {
-  return _SERIES_MAP[market.id] || buildSeriesMock(market, days);
-}
+let _SERIES_MAP = {}, _BOOK_MAP = {};
+function buildSeries(market, days = 90) { return _SERIES_MAP[market.id] || buildSeriesMock(market, days); }
 function buildBook(market, depth = 8) {
   if (_BOOK_MAP[market.id]) return _BOOK_MAP[market.id];
   const rand = mulberry32(market.seed + 1);
   const mid = market.yes;
   const bids = [], asks = [];
   for (let i = 0; i < depth; i++) {
-    bids.push({ p: Math.max(0.01, mid - 0.005 - i * 0.005 - rand() * 0.003), sz: Math.floor(2000 + rand() * 18000) });
-    asks.push({ p: Math.min(0.99, mid + 0.005 + i * 0.005 + rand() * 0.003), sz: Math.floor(2000 + rand() * 18000) });
+    bids.push({ p: Math.max(0.01, mid - 0.005 - i*0.005 - rand()*0.003), sz: Math.floor(2000 + rand()*18000) });
+    asks.push({ p: Math.min(0.99, mid + 0.005 + i*0.005 + rand()*0.003), sz: Math.floor(2000 + rand()*18000) });
   }
   return { bids, asks, mid };
 }
 
 // ─── API HELPERS ─────────────────────────────────────────────────────────────
 const _TAG_TO_CAT = { Politics:'Politics', Sports:'Sports', Crypto:'Crypto', Cryptocurrency:'Crypto', Science:'Tech', Technology:'Tech', Finance:'Macro', Economics:'Macro', Entertainment:'Culture', 'Pop Culture':'Culture', Business:'Macro', World:'Politics', Elections:'Politics' };
-function _tryJ(s, fb) { try { return JSON.parse(s); } catch { return fb; } }
-function _clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-function _fmtD(iso) { try { return new Date(iso).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); } catch { return '—'; } }
+const _tryJ  = (s, fb) => { try { return JSON.parse(s); } catch { return fb; } };
+const _clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const _fmtD  = iso => { try { return new Date(iso).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); } catch { return '—'; } };
 
 function _toMarket(m, i) {
   const prices = _tryJ(m.outcomePrices, ['0.5','0.5']);
   const tokens = _tryJ(m.clobTokenIds, []);
-  const yes = _clamp(parseFloat(prices[0]) || 0.5, 0.01, 0.99);
-  const tag = m.tags?.[0]?.label || '';
+  const yes    = _clamp(parseFloat(prices[0]) || 0.5, 0.01, 0.99);
+  const tag    = m.tags?.[0]?.label || '';
   return {
-    id:          m.conditionId,
-    cat:         _TAG_TO_CAT[tag] || tag || 'General',
-    q:           m.question || '',
-    short:       (m.groupItemTitle || m.question || '').slice(0, 55),
-    yes,
-    delta24:     parseFloat(m.oneDayPriceChange) || 0,
-    vol:         parseFloat(m.volume24hr) || parseFloat(m.volume) || 0,
-    liq:         parseFloat(m.liquidityClob) || parseFloat(m.liquidity) || 0,
-    closes:      m.endDate ? _fmtD(m.endDate) : '—',
-    seed:        i * 7 + 3,
-    conditionId: m.conditionId,
-    yesTokenId:  tokens[0] || null,
+    id: m.conditionId, cat: _TAG_TO_CAT[tag] || tag || 'General',
+    q: m.question || '', short: (m.groupItemTitle || m.question || '').slice(0, 55),
+    yes, delta24: parseFloat(m.oneDayPriceChange) || 0,
+    vol: parseFloat(m.volume24hr) || parseFloat(m.volume) || 0,
+    liq: parseFloat(m.liquidityClob) || parseFloat(m.liquidity) || 0,
+    closes: m.endDate ? _fmtD(m.endDate) : '—',
+    seed: i * 7 + 3, conditionId: m.conditionId, yesTokenId: tokens[0] || null,
   };
 }
 
 function _buildSeriesFromHistory(raw, market, days = 90) {
   if (!raw?.length) return buildSeriesMock(market, days);
   const hist = [...raw].sort((a, b) => a.t - b.t);
-  const nowTs = Date.now() / 1000;
-  const startTs = nowTs - days * 86400;
+  const nowTs = Date.now() / 1000, startTs = nowTs - days * 86400;
   const win = hist.filter(h => h.t >= startTs);
   if (win.length < 2) return buildSeriesMock(market, days);
   const out = [];
@@ -157,11 +150,10 @@ function _detectNews(series, market) {
   return series
     .filter(p => p.jump !== null && Math.abs(p.jump) > 0.02)
     .sort((a, b) => Math.abs(b.jump) - Math.abs(a.jump))
-    .slice(0, 3)
-    .sort((a, b) => a.d - b.d)
+    .slice(0, 3).sort((a, b) => a.d - b.d)
     .map(p => {
       const ago = (series.length - 1) - p.d;
-      const t = ago === 0 ? 'now' : ago < 2 ? '−1d' : ago < 7 ? `−${ago}d` : ago < 14 ? '−1w' : `−${Math.floor(ago/7)}w`;
+      const t   = ago === 0 ? 'now' : ago < 2 ? '−1d' : ago < 7 ? `−${ago}d` : ago < 14 ? '−1w' : `−${Math.floor(ago/7)}w`;
       const dir = p.jump > 0 ? 'surged' : 'dropped';
       return { day: p.d, t, headline: `${market.short} probability ${dir} ${Math.abs(p.jump*100).toFixed(0)}pp`, impact: p.jump, src: 'Polymarket' };
     });
@@ -171,9 +163,7 @@ async function loadPolymarketData() {
   const raw = await fetch(`${GAMMA}/markets?active=true&closed=false&limit=20&order=volume24hr&ascending=false`).then(r => r.json());
   const markets = raw.filter(m => m.enableOrderBook && m.conditionId && m.clobTokenIds).slice(0, 8).map(_toMarket);
   if (!markets.length) throw new Error('no markets');
-
-  const nowTs = Math.floor(Date.now() / 1000);
-  const startTs = nowTs - 90 * 86400;
+  const nowTs = Math.floor(Date.now() / 1000), startTs = nowTs - 90 * 86400;
   const [histories, books] = await Promise.all([
     Promise.all(markets.map(m =>
       fetch(`${CLOB}/prices-history?market=${m.conditionId}&startTs=${startTs}&endTs=${nowTs}&fidelity=60`)
@@ -185,7 +175,6 @@ async function loadPolymarketData() {
         : Promise.resolve(null)
     )),
   ]);
-
   const sm = {}, bm = {}, nm = {};
   markets.forEach((m, i) => {
     sm[m.id] = _buildSeriesFromHistory(histories[i], m);
@@ -196,27 +185,18 @@ async function loadPolymarketData() {
     }
     nm[m.id] = _detectNews(sm[m.id], m);
   });
-
-  MARKETS = markets;
-  _SERIES_MAP = sm;
-  _BOOK_MAP = bm;
-  NEWS_BY_MARKET = nm;
+  MARKETS = markets; _SERIES_MAP = sm; _BOOK_MAP = bm; NEWS_BY_MARKET = nm;
   TICKER_FEED = markets
     .filter(m => Math.abs(m.delta24) > 0.001)
     .sort((a, b) => Math.abs(b.delta24) - Math.abs(a.delta24))
     .map(m => ({ mkt: m.short, delta: m.delta24, reason: 'market activity', t: 'live' }));
 }
 
-// ─── SHARED PRIMITIVES ────────────────────────────────────────────────────────
-const fmtPct = (v, d = 0) => (v * 100).toFixed(d) + '%';
-const fmtPp = v => (v >= 0 ? '+' : '') + (v * 100).toFixed(1) + 'pp';
-const fmtMoney = v => {
-  if (v >= 1e9) return '$' + (v / 1e9).toFixed(1) + 'B';
-  if (v >= 1e6) return '$' + (v / 1e6).toFixed(1) + 'M';
-  if (v >= 1e3) return '$' + (v / 1e3).toFixed(0) + 'k';
-  return '$' + v.toFixed(0);
-};
+// ─── FORMATTERS ───────────────────────────────────────────────────────────────
+const fmtPp    = v => (v >= 0 ? '+' : '') + (v * 100).toFixed(1) + 'pp';
+const fmtMoney = v => v >= 1e9 ? '$'+(v/1e9).toFixed(1)+'B' : v >= 1e6 ? '$'+(v/1e6).toFixed(1)+'M' : v >= 1e3 ? '$'+(v/1e3).toFixed(0)+'k' : '$'+v.toFixed(0);
 
+// ─── HOOKS ────────────────────────────────────────────────────────────────────
 function useTicker(hz = 1) {
   const [t, setT] = React.useState(0);
   React.useEffect(() => {
@@ -230,57 +210,65 @@ function useLive(base, ampl = 0.003) {
   const j = Math.sin(t * 0.7 + base * 17) * ampl + Math.cos(t * 0.31 + base * 31) * ampl * 0.4;
   return Math.max(0.001, Math.min(0.999, base + j));
 }
+function useWindowSize() {
+  const [sz, setSz] = React.useState({ w: window.innerWidth, h: window.innerHeight });
+  React.useEffect(() => {
+    const fn = () => setSz({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+  return sz;
+}
 
-function ProbChart({ market, series, news, width = 600, height = 220, variant = 'editorial' }) {
-  const pad = { l: 36, r: 16, t: 18, b: 22 };
-  const w = width - pad.l - pad.r, h = height - pad.t - pad.b;
+// ─── RESPONSIVE CHART — uses viewBox so it scales with container ──────────────
+function ProbChart({ market, series, news }) {
+  const VW = 680, VH = 200;
+  const pad = { l:36, r:16, t:18, b:22 };
+  const w = VW - pad.l - pad.r, h = VH - pad.t - pad.b;
   const days = series.length;
   const x = d => pad.l + (d / (days - 1)) * w;
   const y = v => pad.t + (1 - v) * h;
-  const path = series.map((p, i) => `${i ? 'L' : 'M'}${x(p.d).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
-  const areaPath = path + ` L${x(series[series.length-1].d).toFixed(1)},${y(0).toFixed(1)} L${x(0).toFixed(1)},${y(0).toFixed(1)} Z`;
-  const pal = { editorial: { line:'#1a1612', area:'rgba(26,22,18,0.07)', grid:'rgba(26,22,18,0.08)', txt:'rgba(26,22,18,0.55)', up:'#0f6b3e', down:'#9a2a2a' } }[variant] ||
-              { line:'#1a1612', area:'rgba(26,22,18,0.07)', grid:'rgba(26,22,18,0.08)', txt:'rgba(26,22,18,0.55)', up:'#0f6b3e', down:'#9a2a2a' };
+  const path = series.map((p, i) => `${i?'L':'M'}${x(p.d).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
+  const area = path + ` L${x(days-1).toFixed(1)},${y(0).toFixed(1)} L${x(0).toFixed(1)},${y(0).toFixed(1)} Z`;
+  const pal  = { line:'#1a1612', area:'rgba(26,22,18,0.07)', grid:'rgba(26,22,18,0.08)', txt:'rgba(26,22,18,0.55)', up:'#0f6b3e', down:'#9a2a2a' };
   const safeNews = news || [];
   return (
-    <svg width={width} height={height} style={{ display:'block', overflow:'visible' }}>
+    <svg width="100%" viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid meet" style={{ display:'block' }}>
       {[0.25, 0.5, 0.75].map(g => (
         <g key={g}>
           <line x1={pad.l} x2={pad.l+w} y1={y(g)} y2={y(g)} stroke={pal.grid} strokeDasharray={g===0.5?'0':'2 4'} />
           <text x={pad.l-6} y={y(g)+3} fontSize="10" textAnchor="end" fill={pal.txt} style={{fontFamily:'JetBrains Mono, monospace'}}>{Math.round(g*100)}</text>
         </g>
       ))}
-      <path d={areaPath} fill={pal.area} />
+      <path d={area} fill={pal.area} />
       <path d={path} fill="none" stroke={pal.line} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
       {safeNews.map((n, i) => {
         const sx = x(n.day), sy = y(series[n.day]?.v ?? market.yes);
         const col = n.impact >= 0 ? pal.up : pal.down;
         return (
           <g key={i}>
-            <line x1={sx} x2={sx} y1={sy} y2={pad.t} stroke={col} strokeOpacity="0.18" strokeDasharray="2 3" />
+            <line x1={sx} x2={sx} y1={sy} y2={pad.t} stroke={col} strokeOpacity="0.2" strokeDasharray="2 3" />
             <circle cx={sx} cy={sy} r="3.5" fill="#fff" stroke={col} strokeWidth="1.5" />
           </g>
         );
       })}
-      <circle cx={x(days-1)} cy={y(series[series.length-1].v)} r="4" fill={pal.line} />
-      <circle cx={x(days-1)} cy={y(series[series.length-1].v)} r="9" fill={pal.line} fillOpacity="0.15" />
-      <text x={pad.l} y={height-4} fontSize="10" fill={pal.txt} style={{fontFamily:'JetBrains Mono, monospace'}}>−90d</text>
-      <text x={pad.l+w} y={height-4} fontSize="10" textAnchor="end" fill={pal.txt} style={{fontFamily:'JetBrains Mono, monospace'}}>now</text>
+      <circle cx={x(days-1)} cy={y(series[series.length-1].v)} r="4"  fill={pal.line} />
+      <circle cx={x(days-1)} cy={y(series[series.length-1].v)} r="9"  fill={pal.line} fillOpacity="0.15" />
+      <text x={pad.l}   y={VH-4} fontSize="10" fill={pal.txt} style={{fontFamily:'JetBrains Mono, monospace'}}>−90d</text>
+      <text x={pad.l+w} y={VH-4} fontSize="10" textAnchor="end" fill={pal.txt} style={{fontFamily:'JetBrains Mono, monospace'}}>now</text>
     </svg>
   );
 }
 
-// ─── MINI SPARKLINE ───────────────────────────────────────────────────────────
 function MiniSpark({ market }) {
   const series = React.useMemo(() => buildSeries(market), [market.id]);
-  const up = market.delta24 >= 0;
-  const color = up ? '#1d6b3a' : '#922424';
-  const w = 280, h = 22;
+  const color = market.delta24 >= 0 ? '#1d6b3a' : '#922424';
   const vals = series.map(p => p.v);
   const mn = Math.min(...vals), mx = Math.max(...vals), range = mx - mn || 0.01;
-  const path = vals.map((v, i) => `${i?'L':'M'}${(i/(vals.length-1))*w},${((mx-v)/range)*h}`).join(' ');
+  const W = 280, H = 22;
+  const path = vals.map((v, i) => `${i?'L':'M'}${(i/(vals.length-1))*W},${((mx-v)/range)*H}`).join(' ');
   return (
-    <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
       <path d={path} fill="none" stroke={color} strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
@@ -288,126 +276,323 @@ function MiniSpark({ market }) {
 
 // ─── EDITORIAL TERMINAL ───────────────────────────────────────────────────────
 function Editorial() {
+  const { w: vw } = useWindowSize();
+  const isMobile  = vw < 640;
+  const isTablet  = vw >= 640 && vw < 1100;
+  const isDesktop = vw >= 1100;
+
   const market = MARKETS[0];
   const series = React.useMemo(() => buildSeries(market), [market.id]);
   const news   = NEWS_BY_MARKET[market.id] || [];
   const live   = useLive(market.yes, 0.004);
   const tick   = useTicker(2);
 
-  const today = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+  const today = new Date().toLocaleDateString('en-US', { weekday: isMobile ? undefined : 'long', month:'long', day:'numeric', year:'numeric' });
 
-  // Category index: average delta24 per cat
   const catStats = React.useMemo(() => {
     const acc = {};
-    MARKETS.forEach(m => {
-      if (!acc[m.cat]) acc[m.cat] = [];
-      acc[m.cat].push(m.delta24);
-    });
+    MARKETS.forEach(m => { if (!acc[m.cat]) acc[m.cat] = []; acc[m.cat].push(m.delta24); });
     return acc;
   }, []);
+  const catAvg = cat => { const a = catStats[cat] || [0]; return a.reduce((x,y) => x+y, 0) / a.length; };
 
-  const catAvg = cat => {
-    const arr = catStats[cat] || [0];
-    const avg = arr.reduce((a,b) => a+b, 0) / arr.length;
-    return avg;
-  };
+  const topNews    = news[0];
+  const dir        = market.delta24 >= 0 ? 'climbed' : 'slipped';
+  const pp         = Math.abs(market.delta24 * 100).toFixed(1);
+  const eventCtx   = topNews ? ` ${topNews.headline}.` : '';
+  const articleLead = `Odds on the ${market.short} market ${dir} to ${(live*100).toFixed(1)}¢ — a ${pp}pp ${market.delta24>=0?'advance':'decline'} over 24 hours.${eventCtx} Volume surpassed ${fmtMoney(market.vol)}.`;
+  const pullQuote  = topNews ? `"${topNews.headline}"` : `Market-implied probability: ${(market.yes*100).toFixed(0)}¢`;
+  const pullSrc    = topNews ? `${topNews.src} · ${fmtPp(topNews.impact)} impact` : 'Polymarket CLOB · live';
 
-  // Derived article text from live market data
-  const topNews = news[0];
-  const dir = market.delta24 >= 0 ? 'climbed' : 'slipped';
-  const pp = Math.abs(market.delta24 * 100).toFixed(1);
-  const eventCtx = topNews ? ` The move tracked ${topNews.headline.toLowerCase()}.` : '';
-  const articleLead = `Odds on the ${market.short} market ${dir} to ${(live*100).toFixed(1)}¢ in recent trading — a ${pp}pp ${market.delta24 >= 0 ? 'advance' : 'decline'} over the past 24 hours.${eventCtx} Volume on the contract surpassed ${fmtMoney(market.vol)}. Open interest now stands near a cycle high.`;
-
-  // Pull quote from top news or generic
-  const pullQuote = topNews
-    ? `"${topNews.headline}"`
-    : `Market-implied probability: ${(market.yes*100).toFixed(0)}¢`;
-  const pullSrc = topNews ? `${topNews.src} · ${fmtPp(topNews.impact)} impact` : 'Polymarket CLOB · live';
-
-  // Briefing from live MARKETS
-  const briefingItems = MARKETS.slice(0, 5).map(m => ({
-    highlight: m.short,
-    prob: m.yes,
-    delta: m.delta24,
-    up: m.delta24 >= 0,
-  }));
-
-  // Last-24h high/low from series
   const last24 = series.slice(-24);
   const high24 = Math.max(...last24.map(p => p.v));
   const low24  = Math.min(...last24.map(p => p.v));
 
   const c = {
-    bg:'#f1ede4', paper:'#fbf7ee', paperHi:'#fffaf0',
-    ink:'#181410', body:'rgba(24,20,16,0.78)', dim:'rgba(24,20,16,0.55)',
+    bg:'#f1ede4', paper:'#fbf7ee', ink:'#181410',
+    body:'rgba(24,20,16,0.78)', dim:'rgba(24,20,16,0.55)',
     dim2:'rgba(24,20,16,0.35)', rule:'rgba(24,20,16,0.16)', ruleSoft:'rgba(24,20,16,0.08)',
     up:'#1d6b3a', down:'#922424', accent:'#a85515', gold:'#8a6c1f',
   };
-
-  const Rule = ({ thick=false, double=false, style={} }) => (
-    <div style={{ borderTop:`${thick?2:1}px solid ${c.ink}`, borderBottom:double?`1px solid ${c.ink}`:'none', height:double?4:0, ...style }} />
-  );
-  const Kicker = ({ children, color }) => (
-    <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, textTransform:'uppercase', letterSpacing:2, color:color||c.accent, fontWeight:600 }}>{children}</span>
-  );
   const cats = ['Macro','Politics','Sports','Crypto','Culture','Tech'];
 
-  return (
-    <div style={{ width:'100%', height:'100%', background:c.bg, color:c.ink, fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+  const Kicker = ({ children, color, size }) => (
+    <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize: size || 10, textTransform:'uppercase', letterSpacing:2, color:color||c.accent, fontWeight:600 }}>{children}</span>
+  );
+  const Rule = ({ thick = false, double = false }) => (
+    <div style={{ borderTop:`${thick?2:1}px solid ${c.ink}`, borderBottom:double?`1px solid ${c.ink}`:'none', height:double?4:0 }} />
+  );
 
-      {/* MASTHEAD */}
-      <div style={{ padding:'14px 32px 0' }}>
-        <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', paddingBottom:8 }}>
-          <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.dim, textTransform:'uppercase', letterSpacing:1.6, lineHeight:1.5 }}>
-            <div>{today}</div>
-            <div>New York · Established 2024</div>
+  // ── Stat grid (YES/NO + 4 metrics) ──
+  const StatBlock = () => (
+    <div style={{ display:'flex', flexDirection:'column' }}>
+      <div style={{ background:c.paper, border:`1px solid ${c.rule}`, padding:isMobile?'10px 12px':'14px 16px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+          <Kicker color={c.up}>Yes</Kicker>
+          <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:market.delta24>=0?c.up:c.down }}>{fmtPp(market.delta24)}</span>
+        </div>
+        <div style={{ display:'flex', alignItems:'baseline', gap:4, marginTop:2 }}>
+          <span style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:isMobile?44:56, lineHeight:0.95, fontVariantNumeric:'tabular-nums', letterSpacing:-1.5 }}>{(live*100).toFixed(1)}</span>
+          <span style={{ fontSize:isMobile?14:18, color:c.dim, fontFamily:'"Instrument Serif", Georgia, serif' }}>¢</span>
+        </div>
+        <div style={{ height:4, background:c.ruleSoft, marginTop:8, position:'relative' }}>
+          <div style={{ position:'absolute', left:0, top:0, bottom:0, width:live*100+'%', background:c.up, transition:'width .4s' }} />
+        </div>
+      </div>
+      <div style={{ background:c.paper, borderLeft:`1px solid ${c.rule}`, borderRight:`1px solid ${c.rule}`, borderBottom:`1px solid ${c.rule}`, padding:'10px 16px', display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+        <Kicker color={c.down}>No</Kicker>
+        <span style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:22, fontVariantNumeric:'tabular-nums' }}>{((1-live)*100).toFixed(1)}<span style={{ fontSize:11, color:c.dim }}>¢</span></span>
+        <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.down }}>{fmtPp(-market.delta24)}</span>
+      </div>
+      <div style={{ marginTop:10, display:'grid', gridTemplateColumns:'1fr 1fr', border:`1px solid ${c.rule}`, background:c.paper }}>
+        {[['Vol 24h', fmtMoney(market.vol)], ['Liquidity', fmtMoney(market.liq)], ['24h High', (high24*100).toFixed(1)+'¢'], ['24h Low', (low24*100).toFixed(1)+'¢']].map(([l, v], i) => (
+          <div key={l} style={{ padding:'8px 12px', borderRight:i%2===0?`1px solid ${c.rule}`:'none', borderBottom:i<2?`1px solid ${c.rule}`:'none' }}>
+            <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.dim, textTransform:'uppercase', letterSpacing:1.4 }}>{l}</div>
+            <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:16, fontVariantNumeric:'tabular-nums', marginTop:2 }}>{v}</div>
           </div>
-          <div style={{ textAlign:'center', flex:1 }}>
-            <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:52, lineHeight:0.95, letterSpacing:-1.2 }}>
-              The <span style={{ fontStyle:'italic' }}>Forecast</span> Daily
-            </div>
-            <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:12, fontStyle:'italic', color:c.dim, marginTop:4, letterSpacing:0.4 }}>
-              "What the crowd believes today, priced to the cent." — Vol. III
-            </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // ── The Wire ──
+  const Wire = ({ count = 6 }) => (
+    <div style={{ padding:isMobile?'14px 16px':'18px 24px 12px', borderBottom:`1px solid ${c.rule}` }}>
+      <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:2 }}>
+        <span style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:isMobile?18:22, fontStyle:'italic', letterSpacing:-0.3 }}>The Wire</span>
+        <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.dim, textTransform:'uppercase', letterSpacing:1.4, display:'inline-flex', alignItems:'center', gap:6 }}>
+          <span style={{ width:6, height:6, borderRadius:3, background:c.up, opacity:tick%2?1:0.5, transition:'opacity .4s' }} />
+          Live
+        </span>
+      </div>
+      <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.dim2, textTransform:'uppercase', letterSpacing:1.4, marginBottom:8 }}>Polymarket CLOB · streaming</div>
+      {TICKER_FEED.slice(0, count).map((t, i) => (
+        <div key={i} style={{ display:'grid', gridTemplateColumns:'32px 56px 1fr', columnGap:8, padding:'6px 0', borderBottom:i<count-1?`1px dotted ${c.rule}`:'none', alignItems:'baseline' }}>
+          <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.dim }}>{t.t}</span>
+          <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:11, color:t.delta>=0?c.up:c.down, fontWeight:600 }}>{fmtPp(t.delta)}</span>
+          <div>
+            <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:13, color:c.ink, lineHeight:1.2 }}>{t.mkt}</div>
+            <div style={{ fontSize:10, color:c.dim, fontStyle:'italic', marginTop:1 }}>{t.reason}</div>
           </div>
-          <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.dim, textTransform:'uppercase', letterSpacing:1.6, lineHeight:1.5, textAlign:'right' }}>
-            <div>Single copy · 25¢</div>
-            <div>polymarket.api · live</div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // ── Watchlist ──
+  const Watchlist = ({ count = 4 }) => (
+    <div style={{ padding:isMobile?'14px 16px':'14px 24px 8px' }}>
+      <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:10 }}>
+        <span style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:isMobile?16:18, fontStyle:'italic', letterSpacing:-0.2 }}>On the Watchlist</span>
+        <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.dim, textTransform:'uppercase', letterSpacing:1.4 }}>{Math.min(count, MARKETS.length-1)} markets</span>
+      </div>
+      {MARKETS.slice(1, count+1).map((m, idx) => {
+        const lv = useLive(m.yes, 0.002);
+        const up = m.delta24 >= 0;
+        return (
+          <div key={m.id} style={{ padding:'7px 0', borderBottom:idx<count-1?`1px solid ${c.ruleSoft}`:'none' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', gap:8 }}>
+              <div style={{ flex:1, minWidth:0 }}>
+                <Kicker color={c.dim} size={9}>{m.cat}</Kicker>
+                <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:13, lineHeight:1.2, marginTop:2, color:c.ink, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.short}</div>
+              </div>
+              <div style={{ textAlign:'right', flexShrink:0 }}>
+                <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:20, lineHeight:1, fontVariantNumeric:'tabular-nums' }}>{(lv*100).toFixed(0)}<span style={{ fontSize:10, color:c.dim }}>¢</span></div>
+                <div style={{ fontSize:10, fontFamily:'JetBrains Mono, monospace', color:up?c.up:c.down, fontWeight:600 }}>{fmtPp(m.delta24)}</div>
+              </div>
+            </div>
+            <div style={{ marginTop:3 }}><MiniSpark market={m} /></div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  // ── Lead story body (headline + article + pull quote + chart) ──
+  const LeadStory = () => (
+    <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
+      <Kicker>{market.delta24 >= 0 ? '↗' : '↘'} Top Mover · {market.cat}</Kicker>
+      <h1 style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontWeight:400, fontSize: isMobile ? (market.q.length>50?22:28) : isTablet ? (market.q.length>60?30:38) : (market.q.length>60?36:48), lineHeight:1.05, letterSpacing:-1, margin:'6px 0 4px', textWrap:'balance' }}>
+        {market.q}
+      </h1>
+      <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:isMobile?13:15, fontStyle:'italic', color:c.dim, lineHeight:1.35, marginBottom:8 }}>
+        {topNews ? `${topNews.headline}. The line sits at ${(market.yes*100).toFixed(0)}¢.` : `Market probability stands at ${(market.yes*100).toFixed(0)}¢ with ${fmtMoney(market.vol)} in 24h volume.`}
+      </div>
+      <div style={{ display:'flex', gap:10, flexWrap:'wrap', fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.dim, textTransform:'uppercase', letterSpacing:1.2, paddingBottom:10, borderBottom:`1px solid ${c.rule}` }}>
+        <span>Markets Desk</span><span style={{ color:c.dim2 }}>·</span>
+        <span>Updated {tick}s ago</span><span style={{ color:c.dim2 }}>·</span>
+        <span>Resolves {market.closes}</span>
+      </div>
+
+      {/* On desktop/tablet: article text + stat block side by side; on mobile: stacked */}
+      <div style={{ marginTop:12, display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1.2fr 1fr', gap:isMobile?16:22 }}>
+        <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:isMobile?13:14.5, lineHeight:1.55, color:c.body }}>
+          {!isMobile && (
+            <span style={{ float:'left', fontFamily:'"Instrument Serif", Georgia, serif', fontSize:56, lineHeight:0.85, paddingRight:8, paddingTop:4, color:c.ink, fontStyle:'italic' }}>
+              {articleLead[0]}
+            </span>
+          )}
+          {isMobile ? articleLead : articleLead.slice(1)}
+        </div>
+        <StatBlock />
+      </div>
+
+      {/* Pull quote */}
+      <div style={{ borderTop:`1px solid ${c.ink}`, borderBottom:`1px solid ${c.ink}`, padding:'10px 0', margin:'12px 0', textAlign:'center' }}>
+        <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:isMobile?14:17, fontStyle:'italic', lineHeight:1.3, color:c.ink, letterSpacing:-0.2 }}>{pullQuote}</div>
+        <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.dim, textTransform:'uppercase', letterSpacing:1.6, marginTop:5 }}>— {pullSrc}</div>
+      </div>
+
+      {/* Chart */}
+      <div>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:8 }}>
+          <Kicker>Implied Probability · 90 Days</Kicker>
+          <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.dim }}>Polymarket CLOB</span>
+        </div>
+        <ProbChart market={market} series={series} news={news} />
+        {/* Annotations — only desktop has room for these */}
+        {isDesktop && (
+          <div style={{ position:'relative', height:0 }}>
+            {news[0] && <div style={{ position:'absolute', top:-150, left:'15%', fontFamily:'"Instrument Serif", Georgia, serif', fontSize:11, fontStyle:'italic', color:c.dim, lineHeight:1.3, maxWidth:130 }}><span style={{ fontFamily:'JetBrains Mono, monospace', fontStyle:'normal', color:news[0].impact>=0?c.up:c.down, fontSize:9, marginRight:3 }}>1.</span>{news[0].headline}</div>}
+            {news[2] && <div style={{ position:'absolute', top:-150, right:'2%', fontFamily:'"Instrument Serif", Georgia, serif', fontSize:11, fontStyle:'italic', color:c.dim, lineHeight:1.3, maxWidth:110, textAlign:'right' }}><span style={{ fontFamily:'JetBrains Mono, monospace', fontStyle:'normal', color:news[2].impact>=0?c.up:c.down, fontSize:9, marginRight:3 }}>3.</span>{news[2].headline}</div>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // ─── MOBILE: single scrollable column ─────────────────────────────────────
+  if (isMobile) return (
+    <div style={{ width:'100%', minHeight:'100vh', background:c.bg, color:c.ink, fontFamily:'Geist, system-ui, sans-serif', overflowY:'auto' }}>
+      {/* Masthead */}
+      <div style={{ padding:'14px 16px 0' }}>
+        <div style={{ textAlign:'center', paddingBottom:8 }}>
+          <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:36, lineHeight:1, letterSpacing:-0.8 }}>The <span style={{ fontStyle:'italic' }}>Forecast</span> Daily</div>
+          <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.dim, textTransform:'uppercase', letterSpacing:1.6, marginTop:4 }}>{today}</div>
+        </div>
+        <Rule thick double />
+      </div>
+      {/* Ticker strip */}
+      <div style={{ padding:'6px 16px', borderBottom:`1px solid ${c.rule}`, display:'flex', alignItems:'center', gap:12, overflowX:'auto', scrollbarWidth:'none' }}>
+        <span style={{ fontFamily:'JetBrains Mono, monospace', color:c.accent, fontWeight:600, fontSize:9, textTransform:'uppercase', letterSpacing:1.6, flexShrink:0 }}>Live ·</span>
+        {TICKER_FEED.slice(0,4).map((t, i) => (
+          <span key={i} style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:t.delta>=0?c.up:c.down, flexShrink:0 }}>{t.mkt} {fmtPp(t.delta)}</span>
+        ))}
+        <span style={{ display:'inline-flex', alignItems:'center', gap:4, flexShrink:0 }}>
+          <span style={{ width:5, height:5, borderRadius:'50%', background:c.up, opacity:tick%2?1:0.4, transition:'opacity .4s' }} />
+        </span>
+      </div>
+      {/* Lead */}
+      <div style={{ padding:'16px 16px' }}>
+        <LeadStory />
+      </div>
+      {/* Wire */}
+      <div style={{ borderTop:`1px solid ${c.rule}` }}>
+        <Wire count={4} />
+      </div>
+      {/* Watchlist */}
+      <div style={{ borderTop:`1px solid ${c.rule}` }}>
+        <Watchlist count={3} />
+      </div>
+      {/* Footer */}
+      <div style={{ borderTop:`2px solid ${c.ink}`, padding:'8px 16px', display:'flex', justifyContent:'space-between', fontSize:9, fontFamily:'JetBrains Mono, monospace', color:c.dim, textTransform:'uppercase', letterSpacing:1.2 }}>
+        <span>Polymarket · Live</span>
+        <span>{new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</span>
+      </div>
+    </div>
+  );
+
+  // ─── TABLET: 2-column, no left rail, scrollable ───────────────────────────
+  if (isTablet) return (
+    <div style={{ width:'100%', height:'100%', background:c.bg, color:c.ink, fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      {/* Masthead */}
+      <div style={{ padding:'12px 24px 0' }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', paddingBottom:8 }}>
+          <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.dim, textTransform:'uppercase', letterSpacing:1.4, lineHeight:1.5 }}>
+            <div>{today}</div><div>polymarket.api · live</div>
+          </div>
+          <div style={{ textAlign:'center' }}>
+            <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:38, lineHeight:0.95, letterSpacing:-0.8 }}>The <span style={{ fontStyle:'italic' }}>Forecast</span> Daily</div>
+            <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:11, fontStyle:'italic', color:c.dim, marginTop:3 }}>"What the crowd believes today, priced to the cent."</div>
+          </div>
+          <div style={{ display:'flex', alignItems:'center', gap:6, fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.dim, textTransform:'uppercase' }}>
+            <span style={{ width:6, height:6, borderRadius:3, background:c.up, opacity:tick%2?1:0.4, transition:'opacity .4s' }} />
+            <span>{MARKETS.length} live</span>
           </div>
         </div>
         <Rule thick double />
       </div>
+      {/* Index strip — scrollable */}
+      <div style={{ padding:'6px 24px', borderBottom:`1px solid ${c.rule}`, display:'flex', gap:16, overflowX:'auto', scrollbarWidth:'none', alignItems:'center' }}>
+        <span style={{ fontFamily:'JetBrains Mono, monospace', color:c.accent, fontWeight:600, fontSize:9, textTransform:'uppercase', letterSpacing:1.6, flexShrink:0 }}>Index ·</span>
+        {cats.map(cat => {
+          const avg = catAvg(cat);
+          const arrow = avg > 0.005 ? '↗' : avg < -0.005 ? '↘' : '→';
+          return <span key={cat} style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.dim, textTransform:'uppercase', letterSpacing:1.2, flexShrink:0 }}><span style={{ color:c.ink }}>{cat}</span> {arrow} {Math.abs(avg*100).toFixed(1)}</span>;
+        })}
+        <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.ink, flexShrink:0 }}>OI {fmtMoney(MARKETS.reduce((s,m)=>s+m.liq,0))}</span>
+      </div>
+      {/* Body: 2-col */}
+      <div style={{ flex:1, display:'grid', gridTemplateColumns:'1fr 280px', minHeight:0, overflow:'hidden' }}>
+        <div style={{ padding:'16px 24px', overflowY:'auto', borderRight:`1px solid ${c.rule}` }}>
+          <LeadStory />
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', overflow:'hidden' }}>
+          <div style={{ overflowY:'auto', flex:1 }}>
+            <Wire count={5} />
+            <Watchlist count={4} />
+          </div>
+        </div>
+      </div>
+      {/* Footer */}
+      <div style={{ borderTop:`2px solid ${c.ink}`, padding:'6px 24px', display:'flex', justifyContent:'space-between', fontSize:9, fontFamily:'JetBrains Mono, monospace', color:c.dim, textTransform:'uppercase', letterSpacing:1.2 }}>
+        <span>Live · Polymarket CLOB</span>
+        <span>Updated {tick}s ago · {new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</span>
+      </div>
+    </div>
+  );
 
-      {/* INDEX STRIP */}
-      <div style={{ padding:'8px 32px', borderBottom:`1px solid ${c.rule}`, display:'grid', gridTemplateColumns:'auto 1fr auto', gap:24, alignItems:'center', fontSize:11 }}>
-        <span style={{ fontFamily:'JetBrains Mono, monospace', color:c.accent, fontWeight:600, textTransform:'uppercase', letterSpacing:1.6 }}>Index ·</span>
-        <div style={{ display:'flex', gap:22, color:c.dim, fontFamily:'JetBrains Mono, monospace', fontSize:10, textTransform:'uppercase', letterSpacing:1.2, overflow:'hidden' }}>
+  // ─── DESKTOP: full 3-column, viewport-height ──────────────────────────────
+  return (
+    <div style={{ width:'100%', height:'100%', background:c.bg, color:c.ink, fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      {/* Masthead */}
+      <div style={{ padding:'14px 32px 0' }}>
+        <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', paddingBottom:8 }}>
+          <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.dim, textTransform:'uppercase', letterSpacing:1.6, lineHeight:1.5 }}>
+            <div>{today}</div><div>New York · Established 2024</div>
+          </div>
+          <div style={{ textAlign:'center', flex:1 }}>
+            <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:52, lineHeight:0.95, letterSpacing:-1.2 }}>The <span style={{ fontStyle:'italic' }}>Forecast</span> Daily</div>
+            <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:12, fontStyle:'italic', color:c.dim, marginTop:4, letterSpacing:0.4 }}>"What the crowd believes today, priced to the cent." — Vol. III</div>
+          </div>
+          <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.dim, textTransform:'uppercase', letterSpacing:1.6, lineHeight:1.5, textAlign:'right' }}>
+            <div>Single copy · 25¢</div><div>polymarket.api · live</div>
+          </div>
+        </div>
+        <Rule thick double />
+      </div>
+      {/* Index strip */}
+      <div style={{ padding:'8px 32px', borderBottom:`1px solid ${c.rule}`, display:'grid', gridTemplateColumns:'auto 1fr auto', gap:24, alignItems:'center' }}>
+        <span style={{ fontFamily:'JetBrains Mono, monospace', color:c.accent, fontWeight:600, textTransform:'uppercase', letterSpacing:1.6, fontSize:10 }}>Index ·</span>
+        <div style={{ display:'flex', gap:22, overflow:'hidden' }}>
           {cats.map(cat => {
             const avg = catAvg(cat);
             const arrow = avg > 0.005 ? '↗' : avg < -0.005 ? '↘' : '→';
-            return (
-              <span key={cat}><span style={{ color:c.ink }}>{cat}</span> {arrow} {Math.abs(avg*100).toFixed(1)}</span>
-            );
+            return <span key={cat} style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.dim, textTransform:'uppercase', letterSpacing:1.2, flexShrink:0 }}><span style={{ color:c.ink }}>{cat}</span> {arrow} {Math.abs(avg*100).toFixed(1)}</span>;
           })}
         </div>
-        <div style={{ display:'flex', gap:16, color:c.dim, alignItems:'center' }}>
-          <span style={{ display:'inline-flex', alignItems:'center', gap:6, fontFamily:'JetBrains Mono, monospace', fontSize:10, textTransform:'uppercase', letterSpacing:1.2 }}>
+        <div style={{ display:'flex', gap:16, alignItems:'center' }}>
+          <span style={{ display:'inline-flex', alignItems:'center', gap:6, fontFamily:'JetBrains Mono, monospace', fontSize:10, textTransform:'uppercase', letterSpacing:1.2, color:c.dim }}>
             <span style={{ width:6, height:6, borderRadius:3, background:c.up, opacity:tick%2?1:0.4, transition:'opacity .4s' }} />
             {MARKETS.length} markets live
           </span>
-          <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.ink }}>
-            OI {fmtMoney(MARKETS.reduce((s,m)=>s+m.liq,0))}
-          </span>
-          <span style={{ padding:'3px 8px', border:`1px solid ${c.ink}`, fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.ink, textTransform:'uppercase', letterSpacing:1.2 }}>Polymarket</span>
+          <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.ink }}>OI {fmtMoney(MARKETS.reduce((s,m)=>s+m.liq,0))}</span>
         </div>
       </div>
-
-      {/* BODY: 3-column */}
-      <div style={{ flex:1, display:'grid', gridTemplateColumns:'160px 1fr 360px', minHeight:0 }}>
-
-        {/* LEFT RAIL */}
-        <div style={{ borderRight:`1px solid ${c.rule}`, padding:'18px 16px 18px 32px', display:'flex', flexDirection:'column', gap:18, minHeight:0 }}>
+      {/* 3-column body */}
+      <div style={{ flex:1, display:'grid', gridTemplateColumns:'160px 1fr 360px', minHeight:0, overflow:'hidden' }}>
+        {/* Left rail */}
+        <div style={{ borderRight:`1px solid ${c.rule}`, padding:'18px 16px 18px 32px', display:'flex', flexDirection:'column', gap:18, overflow:'hidden' }}>
           <div>
             <Kicker>Sections</Kicker>
             <div style={{ marginTop:8, fontFamily:'"Instrument Serif", Georgia, serif', fontSize:16, lineHeight:1.5 }}>
@@ -422,189 +607,36 @@ function Editorial() {
               })}
             </div>
           </div>
-          <div style={{ marginTop:4 }}>
+          <div>
             <Kicker color={c.gold}>The Briefing</Kicker>
-            <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:13, lineHeight:1.45, color:c.body, marginTop:8, fontStyle:'italic' }}>
-              Five markets the crowd is watching right now.
-            </div>
-            <ol style={{ margin:'10px 0 0', padding:'0 0 0 18px', fontSize:12, color:c.body, lineHeight:1.55 }}>
-              {briefingItems.map((b, i) => (
-                <li key={i} style={{ marginBottom:6 }}>
-                  <strong style={{ color:c.ink }}>{b.highlight}</strong>{' '}
-                  <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:b.up?c.up:c.down }}>{fmtPp(b.delta)}</span>
+            <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:12, fontStyle:'italic', color:c.body, marginTop:8, lineHeight:1.4 }}>Five markets the crowd is watching.</div>
+            <ol style={{ margin:'8px 0 0', padding:'0 0 0 16px', fontSize:12, color:c.body, lineHeight:1.55 }}>
+              {MARKETS.slice(0,5).map((m, i) => (
+                <li key={i} style={{ marginBottom:5 }}>
+                  <strong style={{ color:c.ink }}>{m.short}</strong>{' '}
+                  <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:m.delta24>=0?c.up:c.down }}>{fmtPp(m.delta24)}</span>
                 </li>
               ))}
             </ol>
           </div>
         </div>
-
-        {/* LEAD STORY */}
-        <div style={{ padding:'18px 28px', borderRight:`1px solid ${c.rule}`, display:'flex', flexDirection:'column', minHeight:0, overflow:'hidden' }}>
-          <Kicker>{market.delta24 >= 0 ? '↗' : '↘'} Top Mover · {market.cat}</Kicker>
-          <h1 style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontWeight:400, fontSize:market.q.length > 60 ? 36 : 48, lineHeight:1.0, letterSpacing:-1.2, margin:'8px 0 4px', textWrap:'balance' }}>
-            {market.q}
-          </h1>
-          <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:16, fontStyle:'italic', color:c.dim, lineHeight:1.35, margin:'6px 0 8px', maxWidth:640 }}>
-            {topNews
-              ? `${topNews.headline}. The line currently sits at ${(market.yes*100).toFixed(0)}¢.`
-              : `Market probability stands at ${(market.yes*100).toFixed(0)}¢ with ${fmtMoney(market.vol)} in 24h volume.`}
-          </div>
-          <div style={{ display:'flex', gap:14, fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.dim, textTransform:'uppercase', letterSpacing:1.4, paddingBottom:10, borderBottom:`1px solid ${c.rule}` }}>
-            <span>By the Markets Desk</span>
-            <span style={{ color:c.dim2 }}>·</span>
-            <span>Updated {tick}s ago</span>
-            <span style={{ color:c.dim2 }}>·</span>
-            <span>Resolves {market.closes}</span>
-          </div>
-
-          {/* Two-column body */}
-          <div style={{ marginTop:12, display:'grid', gridTemplateColumns:'1.2fr 1fr', gap:22, minHeight:0 }}>
-            {/* Lead with drop cap */}
-            <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:14.5, lineHeight:1.55, color:c.body }}>
-              <span style={{ float:'left', fontFamily:'"Instrument Serif", Georgia, serif', fontSize:64, lineHeight:0.85, paddingRight:8, paddingTop:4, color:c.ink, fontStyle:'italic' }}>
-                {articleLead[0]}
-              </span>
-              {articleLead.slice(1)}
-            </div>
-
-            {/* Stat block */}
-            <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
-              <div style={{ background:c.paper, border:`1px solid ${c.rule}`, padding:'14px 16px' }}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
-                  <Kicker color={c.up}>Yes</Kicker>
-                  <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:market.delta24>=0?c.up:c.down }}>{fmtPp(market.delta24)}</span>
-                </div>
-                <div style={{ display:'flex', alignItems:'baseline', gap:4, marginTop:2 }}>
-                  <span style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:56, lineHeight:0.95, fontVariantNumeric:'tabular-nums', letterSpacing:-1.5 }}>{(live*100).toFixed(1)}</span>
-                  <span style={{ fontSize:18, color:c.dim, fontFamily:'"Instrument Serif", Georgia, serif' }}>¢</span>
-                </div>
-                <div style={{ height:4, background:c.ruleSoft, marginTop:8, position:'relative' }}>
-                  <div style={{ position:'absolute', left:0, top:0, bottom:0, width:live*100+'%', background:c.up }} />
-                </div>
-              </div>
-              <div style={{ background:c.paper, borderLeft:`1px solid ${c.rule}`, borderRight:`1px solid ${c.rule}`, borderBottom:`1px solid ${c.rule}`, padding:'12px 16px', display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
-                <Kicker color={c.down}>No</Kicker>
-                <span style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:26, fontVariantNumeric:'tabular-nums' }}>{((1-live)*100).toFixed(1)}<span style={{ fontSize:12, color:c.dim }}>¢</span></span>
-                <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.down }}>{fmtPp(-market.delta24)}</span>
-              </div>
-              <div style={{ marginTop:12, display:'grid', gridTemplateColumns:'1fr 1fr', gap:0, border:`1px solid ${c.rule}`, background:c.paper }}>
-                {[
-                  ['Vol 24h',   fmtMoney(market.vol)],
-                  ['Liquidity', fmtMoney(market.liq)],
-                  ['24h High',  (high24*100).toFixed(1)+'¢'],
-                  ['24h Low',   (low24*100).toFixed(1)+'¢'],
-                ].map(([l, v], i) => (
-                  <div key={l} style={{ padding:'10px 12px', borderRight:i%2===0?`1px solid ${c.rule}`:'none', borderBottom:i<2?`1px solid ${c.rule}`:'none' }}>
-                    <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.dim, textTransform:'uppercase', letterSpacing:1.4 }}>{l}</div>
-                    <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:18, fontVariantNumeric:'tabular-nums', marginTop:2 }}>{v}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Pull quote */}
-          <div style={{ borderTop:`1px solid ${c.ink}`, borderBottom:`1px solid ${c.ink}`, padding:'10px 0', margin:'12px 0', textAlign:'center' }}>
-            <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:18, fontStyle:'italic', lineHeight:1.3, color:c.ink, letterSpacing:-0.2 }}>
-              {pullQuote}
-            </div>
-            <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.dim, textTransform:'uppercase', letterSpacing:1.6, marginTop:6 }}>
-              — {pullSrc}
-            </div>
-          </div>
-
-          {/* Hero chart */}
-          <div style={{ position:'relative', flex:1, minHeight:0, display:'flex', flexDirection:'column' }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:8 }}>
-              <Kicker>Implied Probability · 90 Days</Kicker>
-              <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.dim }}>via Polymarket CLOB</div>
-            </div>
-            <div style={{ position:'relative', flex:1, minHeight:180 }}>
-              <ProbChart market={market} series={series} news={news} variant="editorial" width={680} height={210} />
-              {news[0] && (
-                <div style={{ position:'absolute', top:6, left:Math.min(130, (news[0].day/90)*640), fontFamily:'"Instrument Serif", Georgia, serif', fontSize:11, fontStyle:'italic', color:c.dim, lineHeight:1.3, maxWidth:140 }}>
-                  <span style={{ fontFamily:'JetBrains Mono, monospace', fontStyle:'normal', color:news[0].impact>=0?c.up:c.down, fontSize:9, marginRight:3 }}>1.</span>
-                  {news[0].headline}
-                </div>
-              )}
-              {news[1] && (
-                <div style={{ position:'absolute', top:90, left:Math.min(320, (news[1].day/90)*640), fontFamily:'"Instrument Serif", Georgia, serif', fontSize:11, fontStyle:'italic', color:c.dim, lineHeight:1.3, maxWidth:130, textAlign:'center' }}>
-                  <span style={{ fontFamily:'JetBrains Mono, monospace', fontStyle:'normal', color:news[1].impact>=0?c.up:c.down, fontSize:9, marginRight:3 }}>2.</span>
-                  {news[1].headline}
-                </div>
-              )}
-              {news[2] && (
-                <div style={{ position:'absolute', top:6, right:8, fontFamily:'"Instrument Serif", Georgia, serif', fontSize:11, fontStyle:'italic', color:c.dim, lineHeight:1.3, maxWidth:110, textAlign:'right' }}>
-                  <span style={{ fontFamily:'JetBrains Mono, monospace', fontStyle:'normal', color:news[2].impact>=0?c.up:c.down, fontSize:9, marginRight:3 }}>3.</span>
-                  {news[2].headline}
-                </div>
-              )}
-            </div>
-          </div>
+        {/* Lead story — scrollable */}
+        <div style={{ padding:'18px 28px', borderRight:`1px solid ${c.rule}`, overflowY:'auto' }}>
+          <LeadStory />
         </div>
-
-        {/* RIGHT RAIL */}
-        <div style={{ display:'flex', flexDirection:'column', minHeight:0 }}>
-          {/* The Wire */}
-          <div style={{ padding:'18px 24px 12px', borderBottom:`1px solid ${c.rule}` }}>
-            <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:2 }}>
-              <span style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:22, fontStyle:'italic', letterSpacing:-0.3 }}>The Wire</span>
-              <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.dim, textTransform:'uppercase', letterSpacing:1.4, display:'inline-flex', alignItems:'center', gap:6 }}>
-                <span style={{ width:6, height:6, borderRadius:3, background:c.up, opacity:tick%2?1:0.5, transition:'opacity .4s' }} />
-                Live shifts
-              </span>
-            </div>
-            <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.dim2, textTransform:'uppercase', letterSpacing:1.4, marginBottom:8 }}>
-              Polymarket CLOB · streaming
-            </div>
-            {TICKER_FEED.slice(0, 6).map((t, i) => (
-              <div key={i} style={{ display:'grid', gridTemplateColumns:'32px 56px 1fr', columnGap:8, padding:'7px 0', borderBottom:i<5?`1px dotted ${c.rule}`:'none', alignItems:'baseline' }}>
-                <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:c.dim }}>{t.t}</span>
-                <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:11, color:t.delta>=0?c.up:c.down, fontWeight:600 }}>{fmtPp(t.delta)}</span>
-                <div>
-                  <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:14, color:c.ink, lineHeight:1.2 }}>{t.mkt}</div>
-                  <div style={{ fontSize:10, color:c.dim, fontStyle:'italic', marginTop:1 }}>{t.reason}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Watchlist */}
-          <div style={{ padding:'14px 24px 8px', flex:1, overflow:'hidden', display:'flex', flexDirection:'column' }}>
-            <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:8 }}>
-              <span style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:18, fontStyle:'italic', letterSpacing:-0.2 }}>On the Watchlist</span>
-              <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:9, color:c.dim, textTransform:'uppercase', letterSpacing:1.4 }}>{Math.min(4, MARKETS.length-1)} markets</span>
-            </div>
-            {MARKETS.slice(1, 5).map((m, idx) => {
-              const lv = useLive(m.yes, 0.002);
-              const up = m.delta24 >= 0;
-              return (
-                <div key={m.id} style={{ padding:'8px 0', borderBottom:idx<3?`1px solid ${c.ruleSoft}`:'none' }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', gap:8 }}>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <Kicker color={c.dim}>{m.cat}</Kicker>
-                      <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:14, lineHeight:1.2, marginTop:2, color:c.ink, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.short}</div>
-                    </div>
-                    <div style={{ textAlign:'right', flexShrink:0 }}>
-                      <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:24, lineHeight:1, fontVariantNumeric:'tabular-nums', letterSpacing:-0.4 }}>{(lv*100).toFixed(0)}<span style={{ fontSize:11, color:c.dim }}>¢</span></div>
-                      <div style={{ fontSize:10, fontFamily:'JetBrains Mono, monospace', color:up?c.up:c.down, marginTop:1, fontWeight:600 }}>{fmtPp(m.delta24)}</div>
-                    </div>
-                  </div>
-                  <div style={{ marginTop:4 }}>
-                    <MiniSpark market={m} />
-                  </div>
-                </div>
-              );
-            })}
+        {/* Right rail */}
+        <div style={{ display:'flex', flexDirection:'column', overflow:'hidden' }}>
+          <div style={{ overflowY:'auto', flex:1 }}>
+            <Wire count={6} />
+            <Watchlist count={4} />
           </div>
         </div>
       </div>
-
-      {/* FOOTER */}
-      <div style={{ borderTop:`2px solid ${c.ink}`, padding:'8px 32px', display:'flex', justifyContent:'space-between', fontSize:10, fontFamily:'JetBrains Mono, monospace', color:c.dim, textTransform:'uppercase', letterSpacing:1.4, background:c.bg }}>
+      {/* Footer */}
+      <div style={{ borderTop:`2px solid ${c.ink}`, padding:'8px 32px', display:'flex', justifyContent:'space-between', fontSize:10, fontFamily:'JetBrains Mono, monospace', color:c.dim, textTransform:'uppercase', letterSpacing:1.4 }}>
         <span>Live · Polymarket CLOB</span>
         <span>gamma-api.polymarket.com · clob.polymarket.com</span>
-        <span>Updated {tick}s ago · {new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })} local</span>
+        <span>Updated {tick}s ago · {new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</span>
       </div>
     </div>
   );
@@ -613,7 +645,6 @@ function Editorial() {
 // ─── APP ──────────────────────────────────────────────────────────────────────
 function App() {
   const [ready, setReady] = React.useState(false);
-
   React.useEffect(() => {
     loadPolymarketData()
       .catch(err => console.warn('[Polymarket] using mock data:', err.message))
@@ -622,16 +653,11 @@ function App() {
 
   if (!ready) return (
     <div style={{ height:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12, background:'#f1ede4' }}>
-      <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:32, fontStyle:'italic', letterSpacing:-0.5 }}>
-        The <span style={{ fontStyle:'normal' }}>Forecast</span> Daily
-      </div>
-      <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:11, letterSpacing:2, color:'rgba(24,20,16,0.4)', textTransform:'uppercase' }}>
-        Fetching live markets…
-      </div>
+      <div style={{ fontFamily:'"Instrument Serif", Georgia, serif', fontSize:32, fontStyle:'italic', letterSpacing:-0.5 }}>The <span style={{ fontStyle:'normal' }}>Forecast</span> Daily</div>
+      <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:11, letterSpacing:2, color:'rgba(24,20,16,0.4)', textTransform:'uppercase' }}>Fetching live markets…</div>
       <div style={{ width:160, height:2, background:'rgba(24,20,16,0.1)', borderRadius:2, overflow:'hidden' }}>
         <div style={{ height:'100%', background:'rgba(24,20,16,0.35)', borderRadius:2, animation:'pm 1.4s ease-in-out infinite' }} />
       </div>
-      <style>{`@keyframes pm{0%{width:0%;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0%;margin-left:100%}}`}</style>
     </div>
   );
 
