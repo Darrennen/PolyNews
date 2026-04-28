@@ -1,0 +1,3 @@
+{
+  "rewrites": [{ "source": "/", "destination": "/Probability Tracker.html" }]
+}
